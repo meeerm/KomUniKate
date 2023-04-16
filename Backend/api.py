@@ -1,6 +1,6 @@
 '''
 This is an implementation of a REST API for a chat application backend
-Copyright (C) 2023 Timo Aranjo, Meer Abbas, Marcos Lepage, and Talha Naseer
+Copyright (C) 2023  Meer Abbas, Marcos Lepage and Talha Naseer
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,8 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
 
-import mysql.connector
+import json
 from flask import Flask
+from flask_cors import CORS
+
 from flask import request
 
 
@@ -31,19 +33,10 @@ import json
 
 #Create a flask application
 app = Flask(__name__)
-
+CORS(app)
 # Establish a connection to the database
-db = mysql.connector.connect(
-
-
-  host="timoiv.com",
-  port="3306",
-  user="api",
-  password="QCYvH5hl",
-  database="m908a985"
-
-
-)
+with open("data.json", "r") as f:
+    data = json.load(f)
 
 #Perspective API returns float values in the range [0,1] indicating the properties it measured
 #from the comments we sent it.
@@ -125,18 +118,18 @@ def retrieve():
     #We declare the comment array that we will be returning
     comment_Array = None
     #We grab the index and length 'GET' variables from the HTTP packet
-    index = int(request.args.get('index'))
-    length = int(request.args.get('length'))
+    #index = int(request.args.get('index'))
+    #length = int(request.args.get('length'))
     try:
         #This will fail if the index is out of bounds
         #We need to account for that
-        comment_Array = get_comments(index, length)
+        comment_Array = data
     except:
         #Return that it was a bad request if the index was out of bounds
         return 'A 400 (Bad Request) error has occurred. This is probably an error having to do with the index chosen', 400
    
     #Convert the array to our format and return it along with an http response code of 200
-    return convert_Array_To_Return_Body(comment_Array), 200 
+    return comment_Array, 200 
 
 #This is called whenever a 'POST' request is made to the url ending '/api/post'
 #Basically a request to make a new comment
@@ -160,70 +153,17 @@ def post():
     #http response code
     return '', 204
 
-#This is called whenever a 'GET' request is made to the url ending '/api/length'
-#Just returns the length of our table
-@app.route('/api/length', methods=['GET'])
-def table_Length():
-    return str(get_Length()), '200'
-
-def get_Length():
-    cursor = db.cursor()
-    #Determine the amount of rows in the COMMENTS table
-    cursor.execute("SELECT COUNT(*) FROM COMMENTS")
-
-    # Fetch the result
-    result = cursor.fetchone()[0]
-
-    # Print the number of entries in the table
-    return result
 
 # Define a function to insert a new comment into the COMMENTS table
 def insert_comment(comment):
-  cursor = db.cursor()
+  # Insert the comment into the Json
+  new_record = {"comment_number": "John", "comment": comment}
+  data.append(new_record)
 
-  # Find the next available comment_number
-  cursor.execute("SELECT MAX(comment_number) FROM COMMENTS")
-  result = cursor.fetchone()
+  with open("data.json", "w") as f:
+    json.dump(data, f)
 
-  comment_number = result[0] + 1 if result[0] else 1
-
-  # Insert the comment into the database
-  sql = "INSERT INTO COMMENTS (comment_number, comment) VALUES (%s, %s)"
-
-  values = (comment_number, comment.replace("\n", ""))
-
-  cursor.execute(sql, values)
-    #execute function will simply just execute the row at the row the cursor is pointing at at that particular time.
-  db.commit()
-
-  return comment_number
-
-# Define a function to retrieve a list of comments from the COMMENTS table
-def get_comments(comment_number, length):
-
-  cursor = db.cursor()
-  # Check if the starting comment_number exists in the table
-  cursor.execute("SELECT COUNT(*) FROM COMMENTS WHERE comment_number >= %s", (comment_number,))
-  result = cursor.fetchone()
-
-  if result[0] == 0:
-    raise ValueError("Starting comment_number does not exist in the table.")
-
-
-  # Retrieve the requested comments from the database
-  sql = "SELECT comment FROM COMMENTS WHERE comment_number >= %s ORDER BY comment_number LIMIT %s"
-
-  values = (comment_number, length)
-  cursor.execute(sql, values)
-  results = cursor.fetchall()
-  
-  comments=[]
-
-  for item in results:
-    comments.append(item[0])
-
-  return comments
+  return "John"
 
 #Make the REST API server listen on all IP's and port 4000
-app.run(host='0.0.0.0', port=4000)
-
+app.run(host='0.0.0.0', port=5500)
