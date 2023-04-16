@@ -18,33 +18,117 @@
       
       			
 
-		      	<form onsubmit="sendMessage(); return false;" class="chat-box">
+		      	<form onsubmit="send_Message(); return false;" class="chat-box">
 					<input type="text" id="messageInput" placeholder="Type your message here...">
 					<button type="submit">Send</button>
 				</form>
 
 		      <!--JavaScript Code below-->
 		      <script>
-		      	var socket = new WebSocket("ws://localhost:8000/ws");
-        
-        		socket.onmessage = function(event) 
-	        		{
-		          		var message = event.data;
-		          		var messagesDiv = document.getElementById("messages");
-		         		messagesDiv.innerHTML += "<p>" + message + "</p>";
-		          		messagesDiv.scrollTop = messagesDiv.scrollHeight;
-	       			}
-        
-        		function sendMessage() 
-	        		{
-							var messageInput = document.getElementById("messageInput");
-							var message = messageInput.value.trim();
-							if (message !== "") 
-							{
-								socket.send(message);
-								messageInput.value = "";
-	        				}//end if
-        			}//end sendMessage
+				const backend_Hostname = "localhost";
+				const backend_Port = "4000";
+				
+        		async function send_Message() {
+					const message = document.getElementById("messageInput").value.trim();
+					const options = {method: 'POST', headers: {'Content-Type': 'text/plain'}, body: message}
+
+					if (message !== "") {
+						
+						try {
+							const response = await fetch(`http://${backend_Hostname}:${backend_Port}/api/post`, options);
+						} catch {
+							alert("An issue occurred contacting the webserver...");
+							return;
+						}
+						
+						if (Response.status == 403) alert("The content filter blocked your message");
+						
+						if (Response.status == 500) alert("The server had an internal error");
+	        		}
+
+					comment_List_Updater();
+        		}
+				
+				async function get_Comment_List(index, length) {
+					const url = `http://${backend_Hostname}:${backend_Port}/api/retrieve?index=${index}&length=${length}`;
+					let data;
+					
+  					try {
+    					const response = await fetch(url, {method:"GET"});
+    					data = await response.text();
+
+					} catch {
+						alert("An issue occurred contacting the webserver...");
+  					}
+					
+					return data.split("\n");
+				}
+
+				async function get_Comment_Count() {
+					const url = `http://${backend_Hostname}:${backend_Port}/api/length`;
+					let data, response;
+					
+  					try {
+    					 const response = await fetch(url);
+
+					} catch {
+						alert("An issue occurred contacting the webserver...");
+  					}
+					
+					data = await response.text();
+					return data;
+				}
+				
+				function add_Text_As_Comment(string, index) {
+					const element = document.createElement("div");
+					element.setAttribute("id", "message_" + parseInt(index));
+					element.setAttribute("class", "message");
+					element.textContent = string;
+					
+					const parent_Element = document.getElementsByClassName("message");
+					parent_Element.appendChild(element);
+				}
+				
+				function delete_Old_Comments(new_Start_Index) {
+					while (true) {
+						const element = document.getElementById("message_" + parseInt(new_Start_Index));
+						if (element == null) break;
+						element.remove();
+						
+						new_Start_Index--;
+					}
+				}
+				
+				function add_New_Comments() {
+					const comment_Count = parseInt(get_Comment_Count());
+					
+					let index, length;
+
+					if (comment_Count < 10) {
+						index = 1;
+						length = comment_Count;
+					} else {
+						length = 10;
+						index = comment_Count - 9
+					}
+					
+					console.log(comment_Count);
+					console.log(length);
+					console.log(index);
+					
+					const comment_List = get_Comment_List(index, length);
+					
+					for (let i = 0; i < comment_Count; i++) {
+						add_Text_As_Comment(string, i);
+					}
+				}
+				
+				function comment_List_Updater() {
+					add_New_Comments();
+					delete_Old_Comments();
+				}
+
+
         		</script>
 		</body>
 </html>
