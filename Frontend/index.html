@@ -1,0 +1,50 @@
+<!--KomUniKate - HackKU 2023, Saturday, April 15 2023-->
+<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>KomUniKate - Welcome Page</title>
+			<meta charset="utf-8">
+			<link rel="stylesheet" href="style.css">
+		</head>
+
+		<body>
+				<div class="header">
+					<h1>KomUniKate</h1>
+				</div>
+
+		      	<div class="chat-window">
+		        	<div id="messages"></div>
+		      	</div>
+      
+      			
+
+		      	<form onsubmit="sendMessage(); return false;" class="chat-box">
+					<input type="text" id="messageInput" placeholder="Type your message here...">
+					<button type="submit">Send</button>
+				</form>
+
+		      <!--JavaScript Code below-->
+		      <script>
+		      	var socket = new WebSocket("ws://localhost:8000/ws");
+        
+        		socket.onmessage = function(event) 
+	        		{
+		          		var message = event.data;
+		          		var messagesDiv = document.getElementById("messages");
+		         		messagesDiv.innerHTML += "<p>" + message + "</p>";
+		          		messagesDiv.scrollTop = messagesDiv.scrollHeight;
+	       			}
+        
+        		function sendMessage() 
+	        		{
+							var messageInput = document.getElementById("messageInput");
+							var message = messageInput.value.trim();
+							if (message !== "") 
+							{
+								socket.send(message);
+								messageInput.value = "";
+	        				}//end if
+        			}//end sendMessage
+        		</script>
+		</body>
+</html>

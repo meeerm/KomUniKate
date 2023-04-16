@@ -1,0 +1,60 @@
+/*KomUniKate - HackKU, Saturday, April 11 2023*/
+body
+		{
+				font-family: Arial, Helvetica, sans-serif;
+		        margin: 0;
+		        padding: 0;
+		        background-color: #f1f1f1;
+		}
+
+.header {
+		        background-color: #333;
+		        color: rgb(113, 56, 56);
+		        text-align: center;
+		        padding: 10px;
+      	}
+
+.chat-window
+		{
+		        height: 500px;
+		        overflow-y: scroll;
+		        padding: 10px;
+      	}
+
+.chat-box
+		{
+				position:fixed;
+		        bottom: 0;
+		        width: 98.5%;
+		        background-color: #fff;
+		        border: 1px solid #ccc;
+		        padding: 10px;
+		        display: flex;
+		        justify-content: space-between;
+		        align-items: center;
+		        text-align: center;
+      	}
+
+.chat-box input[type=text]
+		{
+		        width: 90%;
+		        padding: 10px;
+		        border: 1px solid #ccc;
+		        border-radius: 4px;
+		        margin-right: 10px;
+     	}
+
+.chat-box button
+		{
+		        background-color: #4CAF50;
+		        color: #fff;
+		        border: none;
+		        padding: 10px;
+		        border-radius: 4px;
+		        cursor: pointer;
+     	}
+
+.chat-box button:hover
+		{
+       			 background-color: #45a049;
+        }
